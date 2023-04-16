@@ -5,7 +5,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import javax.sql.DataSource;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,10 +15,12 @@ import java.util.stream.Collectors;
 @Repository
 public class DataBaseRepository {
     private final String script = "search_productName.sql";
+    private String query = read(script);
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     @Autowired
-    DataSource dataSource;
-    @Autowired
-    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    public DataBaseRepository(NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+    }
 
     private static String read(String scriptFileName) {
         try (InputStream is = new ClassPathResource(scriptFileName).getInputStream();
@@ -31,7 +32,6 @@ public class DataBaseRepository {
     }
 
     public String getProductName(String name){
-        String query = read(script);
         return namedParameterJdbcTemplate
                 .queryForList(query, Collections.singletonMap("name", name), String.class)
                 .toString();
